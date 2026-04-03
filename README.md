@@ -28,7 +28,7 @@
 
 ### 루트 폴더에서 실행
 
-```bash
+bash
 cd C:\Users\Pc\Desktop\ESG_agent_ui
 npm start
 프로젝트 폴더에서 직접 실행
@@ -136,7 +136,7 @@ ESG_Agent/data/template.xlsx
 총점
 
 
-##연도 처리 방식
+## 연도 처리 방식
 
 현재 코드는 엑셀 안에서 연도를 읽을 수 있으면 그 값을 사용합니다.
 연도 값이 명확하지 않으면 기본적으로 현재 연도를 사용합니다.
@@ -170,7 +170,7 @@ Node에서 읽을 때 빈값처럼 보일 수 있습니다.
 
 API 응답 개요
 GET /api/template는 대략 아래 구조로 내려옵니다.
-
+```
 {
   "sourceWorkbook": "template.xlsx",
   "generatedAt": "...",
@@ -179,8 +179,9 @@ GET /api/template는 대략 아래 구조로 내려옵니다.
   "companies": [],
   "categories": []
 }
+```
 
-##현재 구현 범위
+## 현재 구현 범위
 
 현재 구현된 것:
 
@@ -200,7 +201,7 @@ DB 저장
 사용자 권한/로그 기능
 
 
-##문제 발생 시 확인할 것
+## 문제 발생 시 확인할 것
 
 기업이 안 뜰 때
 data/template.xlsx에 실제 데이터 행이 있는지 확인
