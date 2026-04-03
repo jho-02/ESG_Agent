@@ -1,287 +1,216 @@
-# ESG Agent UI 개발자 문서
+# ESG Agent UI 프로젝트
 
-이 폴더는 `Node.js`로 바로 실행 가능한 정리 버전입니다.  
-실무자가 기업을 선택하고, 6개 카테고리 점수를 검토한 뒤, 필요한 경우 세부 지표를 모달 창에서 수정하는 UI를 제공합니다.
+경실련 ESG 기업 점검용 Node.js UI입니다.
 
-## 1. 빠른 시작
+이 프로젝트는 **엑셀에 저장된 값을 그대로 읽어서 화면에 보여주는 것**을 목표로 합니다.  
+즉, 웹 화면에서 점수를 다시 계산하지 않고, `template.xlsx` 안에 들어 있는 값을 그대로 표시합니다.
 
-### 요구 사항
+## 현재 동작 방식
 
-- Node.js 18 이상 권장
-- Windows, macOS, Linux 모두 가능
+- 서버가 `data/template.xlsx`를 읽습니다.
+- 카테고리 구조와 세부지표 구조를 시트 헤더 기준으로 파싱합니다.
+- 각 시트의 **2행 이하**를 기업 데이터 행으로 읽습니다.
+- 화면은 엑셀에 저장된 값을 그대로 보여줍니다.
+- 카테고리 점수, 종합 점수도 엑셀 값을 우선 사용합니다.
+- 현재는 **웹에서 수정한 값이 엑셀 파일에 다시 저장되지는 않습니다.**
+- 현재는 **브라우저 화면 표시용**이며, 수정값은 메모리 상태에서만 반영됩니다.
 
-### 실행
+## 중요한 원칙
+
+이 프로젝트는 현재 다음 원칙으로 동작합니다.
+
+- JS에서 임의 점수 계산을 하지 않음
+- 엑셀 값이 있으면 그 값을 그대로 사용
+- 막대 그래프만 `배점 대비 비율`로 표시
+- 엑셀에 값이 없으면 화면에도 값이 없거나 기본값으로 보일 수 있음
+
+## 실행 방법
+
+### 루트 폴더에서 실행
 
 ```bash
+cd C:\Users\Pc\Desktop\ESG_agent_ui
+npm start
+프로젝트 폴더에서 직접 실행
 cd C:\Users\Pc\Desktop\ESG_agent_ui\프로젝트
 npm start
-```
+브라우저 주소:
 
-브라우저에서 아래 주소로 접속합니다.
-
-```text
 http://localhost:3100
-```
+상태 확인:
 
-헬스체크:
-
-```text
 http://localhost:3100/healthz
-```
+템플릿 API 확인:
 
-템플릿 API:
-
-```text
 http://localhost:3100/api/template
-```
 
-## 2. 프로젝트 구조
+## 폴더 구조
 
-```text
-프로젝트/
-├─ data/
-│  └─ template.xlsx
-├─ public/
-│  ├─ app.js
-│  ├─ index.html
-│  └─ styles.css
-├─ src/
-│  └─ template-loader.js
-├─ .gitignore
-├─ package.json
-├─ README.md
-└─ server.js
-```
+ESG_Agent/
+   ├─ package.json
+   ├─ server.js             # 현재 실행 서버
+   ├─ README.md
+   ├─ data/              # 깃허브에는 x
+   │  └─ template.xlsx   # 원본엑셀 파일을 동일하게 이름 변경 후 사용
+   ├─ src/
+   │  ├─ template-loader.js
+   │  └─ workbook-loader.js
+   └─ public/
+      ├─ index.html
+      ├─ app.js
+      └─ styles.css
 
-### 파일 역할
+##주요 파일 설명
 
-- `server.js`
-  - HTTP 서버 엔트리포인트
-  - 정적 파일 서빙
-  - `/api/template` 응답
-  - `/healthz` 헬스체크 제공
-- `data/template.xlsx`
-  - 엑셀 템플릿 원본
-  - 서버가 이 파일을 읽어 카테고리/섹션/지표 구조를 만듦
-- `src/template-loader.js`
-  - `.xlsx` 내부 XML을 읽어 템플릿 구조로 변환
-- `public/index.html`
-  - HTML 마크업과 대부분의 스타일 정의
-- `public/app.js`
-  - 클라이언트 상태 관리 및 UI 렌더링
-  - 기업 선택, 연도 전환, 순위 기준 전환, 카테고리 모달 편집 처리
-- `public/styles.css`
-  - 보조 스타일 파일
+ESG_Agent
 
-## 3. 현재 UI 동작
+- /server.js
+  - 정적 파일 제공
+  - /api/template 응답 제공
+  - 기본 포트 3100
 
-### 핵심 흐름
+- ESG_Agent/src/template-loader.js
+  - 엑셀 1행 헤더와 색상 구조를 읽음
+  - 카테고리, 섹션, 세부지표 메타 구조 생성
+-ESG_Agent/src/workbook-loader.js
 
-1. 왼쪽에서 `기업 순위`를 확인합니다.
-2. 가운데에서 현재 선택 기업의 6개 카테고리 점수를 봅니다.
-3. 카테고리를 누르면 아래로 펼쳐지는 대신 `세부 지표 편집 모달`이 뜹니다.
-4. 모달 안에서 세부 지표를 확인하고 수정합니다.
+  - 엑셀의 실제 데이터 행을 읽음
+  - 기업별, 연도별, 카테고리별 값 구성
+  - 종합 시트 점수도 함께 읽음
 
-### 현재 구현된 주요 기능
+-ESG_Agent/public/app.js
+  - 프론트 상태 관리
+  - 기업 목록, 카테고리 보드, 세부지표 편집 모달 렌더링
+  - 엑셀 값 우선 표시
 
-- 기업 순위
-  - `통합 순위 / 건전성 / 공정성 / 사회공헌 / 소비자 보호 / 환경경영 / 직원만족` 기준 전환 가능
-  - 현재 보고 있는 카테고리를 바꿔도 왼쪽 순위 기준은 자동 변경되지 않음
-- 검색
-  - 검색어를 입력해도 왼쪽 순위 목록은 유지
-  - 검색은 순위 재산정이 아니라 `기업 빠른 선택` 용도로 동작
-- 연도 전환
-  - 현재 연도 / 전년도 / 재작년 데이터 전환
-  - 선택 연도 기준으로 점수와 세부 지표 갱신
-- 세부 지표 편집
-  - 카테고리 클릭 시 대형 모달 창에서 편집
-  - 일부 지표는 다른 카테고리 값을 참조
+## 엑셀 연결 규칙
 
-## 4. 데이터 구조
+엑셀은 아래 규칙과 파일명을 지켜야 현재 코드와 연결됩니다.
 
-### 템플릿 구조
+1. 파일 위치
+ESG_Agent/data/template.xlsx
 
-`template-loader.js`는 엑셀 색상과 헤더를 읽어 아래 구조를 만듭니다.
+2. 시트 이름
+현재 코드가 기대하는 시트 이름:
 
-- 공통 필드
-- 카테고리
-- 섹션
-- 입력 지표
-- 계산 지표
-- 섹션 점수 필드
-- 카테고리 총점 필드
+1.건전성
+2.공정성
+3.사회공헌
+4.소비자보호
+5.환경경영
+6.직원만족
+종합
 
-### 프론트 상태
+3. 1행은 헤더
+각 시트의 1행은 헤더 행이어야 합니다.
+현재 파서는 이 1행을 기준으로 어떤 열이 어떤 지표인지 판단합니다.
 
-`public/app.js`의 주요 상태는 다음과 같습니다.
+4. 2행부터 실제 기업 데이터
+각 시트의 2행부터 회사 데이터가 들어 있어야 합니다.
 
-- `selectedCompanyId`
-  - 현재 선택 기업
-- `selectedYear`
-  - 현재 선택 연도
-- `rankingCategoryKey`
-  - 왼쪽 기업 순위 기준
-- `activeCategoryKey`
-  - 현재 점검 중인 카테고리
-- `editorModalCategoryKey`
-  - 현재 편집 모달에서 열려 있는 카테고리
+예:
+2행 = A기업
+3행 = B기업
+4행 = C기업
+5. 같은 기업은 가능하면 같은 행 번호 사용
+예를 들어:
 
-### 연도 데이터
+1.건전성 시트 2행 = A기업
+2.공정성 시트 2행 = A기업
+3.사회공헌 시트 2행 = A기업
+종합 시트 2행 = A기업
+이렇게 맞추는 것이 가장 안전합니다.
 
-각 기업은 연도별 데이터를 별도로 가집니다.
+6. 종합 시트
+종합 시트에는 아래 값이 들어 있어야 합니다.
 
-- `company.yearValues[연도]`
-- `company.values`
-  - 현재 선택 연도에 매핑된 실제 작업 값
+회사명
+종목코드
+경실련 업종
+건전성 점수
+공정성 점수
+사회공헌 점수
+소비자보호 점수
+환경경영 점수
+직원만족 점수
+총점
 
-## 5. 서버 동작
 
-### 정적 파일 서빙
+##연도 처리 방식
 
-- `/` 요청 시 `public/index.html` 반환
-- 그 외 `/app.js`, `/styles.css` 등 정적 파일 서빙
-- 존재하지 않는 경로는 `index.html`로 fallback
+현재 코드는 엑셀 안에서 연도를 읽을 수 있으면 그 값을 사용합니다.
+연도 값이 명확하지 않으면 기본적으로 현재 연도를 사용합니다.
 
-### API
+즉, 실제로 연도별 데이터를 쓰려면:
 
-#### `GET /healthz`
+ - 연도 정보가 셀 안에 있거나
+ - 연도별 파일을 나누거나
+추후 연도 컬럼/시트 규칙을 더 명확하게 잡아야 합니다
+현재는 값이 들어 있는 동일 형식 엑셀을 읽는 1차 구조까지 구현된 상태입니다.
 
-응답 예시:
+## 현재 상태에서 꼭 알아둘 점
 
-```json
-{
-  "ok": true
-}
-```
+1. 지금 들어 있는 template.xlsx는 헤더만 있음
+현재 저장된 data/template.xlsx는 실제 기업 데이터가 아니라 헤더만 있는 템플릿입니다.
+그래서 지금 실행하면 기업 수가 0으로 나오는 것이 정상입니다.
 
-#### `GET /api/template`
+2. 수식 셀은 결과값이 저장되어 있어야 함
+엑셀에 수식이 들어 있어도, 파일 안에 계산 결과가 저장되어 있지 않으면
+Node에서 읽을 때 빈값처럼 보일 수 있습니다.
 
-응답 예시:
+가장 안전한 방법:
+- Excel에서 원본 파일 열기
+- 계산 완료 확인
+- 저장
+- 그 파일을 template.xlsx로 넣기
 
-```json
+3. 웹 수정은 아직 저장되지 않음
+현재 UI에서 수정하는 값은 브라우저 메모리 상태에만 반영됩니다.
+엑셀 파일에 다시 저장하는 기능은 아직 없습니다.
+
+API 응답 개요
+GET /api/template는 대략 아래 구조로 내려옵니다.
+
 {
   "sourceWorkbook": "template.xlsx",
   "generatedAt": "...",
+  "dataMode": "excel-values",
+  "years": [2026],
+  "companies": [],
   "categories": []
 }
-```
 
-## 6. 점수 계산 관련 주의
+##현재 구현 범위
 
-현재 점수 계산은 실제 엑셀 평가식을 완전히 재현한 것이 아닙니다.
+현재 구현된 것:
 
-- 엑셀의 구조와 색상 단계는 반영
-- UI 프로토타입용 더미/시뮬레이션 값 포함
-- 실제 운영용으로 쓰려면 항목별 산식 정의 또는 수식 포함 원본 엑셀 기준으로 교체 필요
+엑셀 시트 구조 읽기
+엑셀 실제 데이터 행 읽기
+기업 목록 만들기
+연도 목록 만들기
+종합 점수 / 카테고리 점수 표시
+세부지표 보기 UI 연결
 
-즉, 현재 프로젝트는 `실무 UI 검토용 프로토타입`에 더 가깝습니다.
+현재 미구현:
 
-## 7. 자주 수정할 지점
+수정값을 엑셀 파일에 다시 저장
+엑셀 수식 재계산
+엑셀 업로드 기능
+DB 저장
+사용자 권한/로그 기능
 
-### 포트 변경
 
-```bash
-PORT=3100 npm start
-```
+##문제 발생 시 확인할 것
 
-Windows PowerShell:
-
-```powershell
-$env:PORT=3100
-npm start
-```
-
-### 엑셀 파일 경로 변경
-
-`server.js`
-
-```js
-const TEMPLATE_PATH = path.join(__dirname, "data", "template.xlsx");
-```
-
-### 기본 연도 개수 변경
-
-`public/app.js`
-
-```js
-const YEAR_OPTIONS = Array.from({ length: 3 }, (_, index) => new Date().getFullYear() - index);
-```
-
-예를 들어 5개년으로 늘리려면 `length: 5`로 바꾸면 됩니다.
-
-### 왼쪽 순위 기준 기본값 변경
-
-`public/app.js`
-
-```js
-rankingCategoryKey: "integrated"
-```
-
-### 모달 크기 변경
-
-`public/index.html`
-
-```css
-.editor-modal-panel {
-  width: min(1240px, 100%);
-}
-```
-
-## 8. 디버깅 체크리스트
-
-### 서버는 뜨는데 화면이 비어 있음
-
-- `http://localhost:3100/api/template` 응답 확인
-- `data/template.xlsx` 존재 여부 확인
-- 브라우저 콘솔 에러 확인
-
-### 엑셀 API가 500 에러
-
-- `data/template.xlsx` 경로 확인
-- 엑셀 파일 손상 여부 확인
-- `src/template-loader.js` 파싱 실패 로그 확인
-
-### 순위가 이상함
-
-- 현재 `rankingCategoryKey` 기준인지 확인
-- 검색은 순위 필터가 아니라 기업 선택용이라는 점 확인
-
-### 연도 전환이 안 먹음
-
-- `selectedYear` 값이 바뀌는지 확인
-- `syncAllCompaniesForSelectedYear()` 호출 여부 확인
-- `company.yearValues` 구조 확인
-
-## 9. 권장 후속 작업
-
-- 실제 엑셀 산식 기반 점수 계산으로 교체
-- 기업 검색 자동완성 추가
-- 세부 지표 편집 모달에 저장/되돌리기 기능 추가
-- 데이터 저장 API 연동
-- 사용자 권한/로그인 추가
-
-## 10. 실행 검증 예시
-
-```bash
-cd C:\Users\Pc\Desktop\ESG_agent_ui\프로젝트
-npm start
-```
-
-브라우저:
-
-```text
-http://localhost:3100
-```
-
-API 확인:
-
-```text
-http://localhost:3100/api/template
-http://localhost:3100/healthz
-```
-
-## Port Note
-
-- This clean project uses `http://localhost:3100` by default.
-- If `http://localhost:3000` shows an older blank app, that is a different server.
-- Run `npm start` inside `C:\Users\Pc\Desktop\ESG_agent_ui\프로젝트`.
+기업이 안 뜰 때
+data/template.xlsx에 실제 데이터 행이 있는지 확인
+각 시트가 1행 헤더 / 2행부터 데이터인지 확인
+시트 이름이 코드 기대값과 같은지 확인
+점수가 비어 있을 때
+해당 셀에 실제 값이 저장되어 있는지 확인
+수식 셀이라면 Excel에서 저장된 결과가 있는지 확인
+종합 시트 값이 비어 있지 않은지 확인
+서버는 뜨는데 화면이 비어 있을 때
+http://localhost:3100/api/template 응답 확인
+companies 개수가 0인지 확인
+데이터 행이 없는 템플릿 파일을 넣은 것은 아닌지 확인
