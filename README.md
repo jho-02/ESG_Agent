@@ -1,9 +1,15 @@
 # ESG Agent Frontend Dashboard
 
+##
+
 본 저장소는 AI Open Source Software 1~8주차 과제 제출을 위해 정리된 저장소입니다.
 
 팀 프로젝트 `ESG Agent`의 프론트엔드 파트를 기반으로 구성되었으며, 전체 프로젝트의 주제는 **상장사 평가 자동화 ESG Agent 개발**입니다.
 
+## Repository / Fork Note
+
+> 원본 팀 프로젝트 저장소는 별도로 존재하며, public/private 전환 과정에서 fork 연결 정보가 끊어져 본 저장소에 프로젝트 맥락을 별도로 명시했습니다.
+> 
 ## Repository / Fork Note
 
 원본 팀 프로젝트 저장소는 별도로 존재합니다.
