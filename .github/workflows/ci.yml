@@ -2,11 +2,16 @@ name: CI
 
 on:
   push:
+    branches: [main]
     paths:
-      - 'frontend/**'
+      - "frontend/**"
+      - ".github/workflows/ci.yml"
   pull_request:
+    branches: [main]
     paths:
-      - 'frontend/**'
+      - "frontend/**"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
 
 defaults:
   run:
@@ -15,29 +20,38 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [18.x, 20.x]
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install
+
+      - name: Install dependencies
         run: npm install
-      - name: Lint
+
+      - name: Lint if available
         run: npm run lint --if-present
-      - name: Test
+
+      - name: Test if available
         run: npm test --if-present
-      - name: Build
+
+      - name: Build if available
         run: npm run build --if-present
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-build
+          name: frontend-build-${{ matrix.node-version }}
           path: |
-            dist
-            build
-            public
+            frontend/dist
+            frontend/build
+            frontend/public
           if-no-files-found: warn
