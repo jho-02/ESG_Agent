@@ -1,6 +1,25 @@
-name: 'setup-project'
-description: 'Example composite action to setup project (placeholder)'
+name: 'Setup Project'
+description: 'Setup Node.js project with dependencies'
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '18'
+outputs:
+  install-status:
+    description: 'Installation status'
+    value: ${{ steps.install.outputs.status }}
 runs:
   using: 'composite'
   steps:
-    - run: echo "Setup project placeholder"
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Install dependencies
+      id: install
+      shell: bash
+      run: |
+        cd frontend
+        npm install
+        echo "status=success" >> $GITHUB_OUTPUT
