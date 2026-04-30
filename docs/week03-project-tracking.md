@@ -12,3 +12,16 @@
 - 평가 지표 설명 토글 컴포넌트
 - 더미데이터 로딩/폴백 처리
 - CSV/엑셀 템플릿 파서 연결
+
+실제 구성 결과:
+- Issues: 11개 생성
+- Labels: bug, feature, frontend, ui, chore, ci
+- Milestones:
+  - v0.1 Frontend MVP
+  - v1.0 AI OSS Submission
+- Project Board:
+  - Backlog
+  - To Do
+  - In Progress
+  - Review
+  - Done
