@@ -14,3 +14,9 @@
 - 핵심 기능: 시각화 대시보드, 기업별 평가 조회, 리포트 설명 UI
 - 기술 스택: React, Chart.js, Python 3.10+, FastAPI, LangChain 등
 - 16주 마일스톤 초안: (간단 타임라인 포함)
+  - 1~2주차: 개발 환경 구축, GitHub 저장소 및 프론트엔드 구조 정리
+  - 3~4주차: GitHub Projects, Issues, PR 기반 협업 체계 구축
+  - 5~6주차: Wiki, ADR, OSS 문서화 및 데이터 보안 정책 정리
+  - 7~8주차: GitHub Actions 기반 CI/CD 및 워크플로우 최적화
+  - 9~12주차: ESG 대시보드 UI 개선, 챗봇 UI, 근거자료 다운로드 영역 보강
+  - 13~16주차: DB/API 연동 안정화, 리포트 화면 개선, 최종 테스트 및 발표 준비
