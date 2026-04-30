@@ -6,6 +6,7 @@ DORA 4대 지표:
 - Deployment Frequency: 일정 기간 동안 배포가 이루어진 횟수
 - MTTR: 장애 또는 실패 발생 후 복구까지 걸린 평균 시간
 - Change Failure Rate: 변경 또는 배포 중 실패가 발생한 비율
+
 구성요소:
 - 데이터 소스: mock JSON (metrics/dora-metrics.json)
 - 수집 파이프라인: GitHub Actions 워크플로에서 정기 실행 및 artifact 업로드
