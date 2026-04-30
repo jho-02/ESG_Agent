@@ -1,0 +1,7 @@
+{
+  "leadTime": 3.2,
+  "deploymentFrequency": 12,
+  "mttr": 1.5,
+  "changeFailureRate": 0.08,
+  "notes": "샘플 모의 데이터 (실제 운영 데이터 아님)"
+}

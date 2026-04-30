@@ -1,0 +1,5 @@
+# labeler configuration (example)
+pull_request:
+  - label: "frontend"
+    paths:
+      - "frontend/**"

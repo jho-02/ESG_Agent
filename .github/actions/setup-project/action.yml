@@ -1,0 +1,6 @@
+name: 'setup-project'
+description: 'Example composite action to setup project (placeholder)'
+runs:
+  using: 'composite'
+  steps:
+    - run: echo "Setup project placeholder"

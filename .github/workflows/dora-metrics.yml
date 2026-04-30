@@ -1,0 +1,17 @@
+name: DORA Metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload example DORA metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-metrics
+          path: metrics/dora-metrics.json
