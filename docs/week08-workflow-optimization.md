@@ -1,8 +1,8 @@
 # Week 08 — Workflow 최적화
 
-포함 내용:
-- Matrix 확장 테스트
-- Reusable Workflow 및 Composite Action 예시
-- 캐싱 (actions/cache) 적용
-- 변경 파일 감지(paths)로 선택적 실행
-- 최적화 전/후 비교 리포트 템플릿
+적용 내용:
+- `optimized-ci.yml` 작성
+- `reusable-frontend-ci.yml` 작성
+- `.github/actions/setup-project/action.yml` Composite Action 작성
+- `paths` 조건으로 frontend 변경 시 선택 실행 구성
+- GitHub Actions 초기 설정 과정에서 실패 기록이 있었으나, 이후 CI 워크플로우는 수정 후 성공 확인
