@@ -1,0 +1,29 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "security"
+    groups:
+      npm-patch-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+      npm-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"

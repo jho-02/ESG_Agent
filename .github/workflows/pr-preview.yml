@@ -1,0 +1,53 @@
+name: PR Preview
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/public/**"
+      - "frontend/src/**"
+      - "frontend/server.js"
+      - ".github/workflows/pr-preview.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build preview artifact
+        run: |
+          mkdir -p preview
+          cp -R frontend/public/. preview/
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-preview-${{ github.event.number }}
+          path: preview
+          if-no-files-found: warn
+
+      - name: Comment preview status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = 'Manual check required: connect GitHub Pages, Vercel, or Netlify preview URL after deployment setup.';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: [
+                'PR preview artifact has been uploaded.',
+                '',
+                `Preview URL: ${previewUrl}`,
+                '',
+                'This workflow stores the static preview files as a GitHub Actions artifact.',
+                'A real live preview URL should be connected through GitHub Pages, Vercel, or Netlify.'
+              ].join('\n')
+            });

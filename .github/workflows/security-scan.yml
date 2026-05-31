@@ -1,0 +1,94 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Prepare report directory
+        run: mkdir -p ../security
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate --json > ../security/npm-audit-report.json || true
+
+      - name: Build markdown report
+        if: always()
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          const reportJsonPath = path.resolve('..', 'security', 'npm-audit-report.json');
+          const reportMdPath = path.resolve('..', 'security', 'npm-audit-report.md');
+
+          let report = {};
+          try {
+            if (fs.existsSync(reportJsonPath)) {
+              const raw = fs.readFileSync(reportJsonPath, 'utf8');
+              report = raw.trim() ? JSON.parse(raw) : {};
+            }
+          } catch (error) {
+            report = {};
+          }
+
+          const vulnerabilities = report.metadata?.vulnerabilities || {};
+          const total = Object.values(vulnerabilities).reduce(
+            (sum, value) => sum + Number(value || 0),
+            0
+          );
+
+          const lines = [
+            '# npm audit Security Report',
+            '',
+            `- Generated at: ${new Date().toISOString()}`,
+            '- Target directory: frontend/',
+            `- Total vulnerabilities: ${total}`,
+            `- critical: ${vulnerabilities.critical || 0}`,
+            `- high: ${vulnerabilities.high || 0}`,
+            `- moderate: ${vulnerabilities.moderate || 0}`,
+            `- low: ${vulnerabilities.low || 0}`,
+            '',
+            '## Handling Policy',
+            '- Patch and minor dependency updates can be reviewed through Dependabot.',
+            '- Major updates must be reviewed manually before merging.',
+            '- Snyk requires a separate token, so it is documented as a future extension item.',
+            '',
+            '## Notes',
+            '- The detailed npm audit JSON result is uploaded as a GitHub Actions artifact.',
+            '- No real API keys, DB URLs, or private company data are stored in this report.'
+          ];
+
+          fs.writeFileSync(reportMdPath, lines.join('\n'));
+          EOF
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: |
+            security/npm-audit-report.json
+            security/npm-audit-report.md
+          if-no-files-found: warn

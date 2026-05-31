@@ -1,0 +1,41 @@
+name: Publish Frontend Package
+
+on:
+  push:
+    tags:
+      - "frontend-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@jho-02"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test if available
+        run: npm test --if-present
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,11 +1,16 @@
 {
-  "name": "esg-agent-ui-clean",
-  "version": "1.0.0",
+  "name": "@jho-02/esg-agent-ui-clean",
+  "version": "1.0.1",
   "description": "Clean Node.js ESG company review dashboard.",
-  "private": true,
+  "private": false,
   "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "publish:github": "npm publish"
   }
 }

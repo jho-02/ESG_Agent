@@ -1,0 +1,94 @@
+name: Dependabot Auto Merge
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - labeled
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  auto-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Classify update
+        id: classify
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title || '';
+            const match = title.match(/from\s+(\d+)\.(\d+)\.(\d+)\s+to\s+(\d+)\.(\d+)\.(\d+)/i);
+
+            let autoMerge = false;
+            let reason = 'Version pattern could not be parsed. Manual review is required.';
+
+            if (match) {
+              const current = match.slice(1, 4).map(Number);
+              const next = match.slice(4, 7).map(Number);
+
+              if (current[0] === next[0]) {
+                autoMerge = true;
+                reason = 'Patch or minor update detected. This PR is eligible for auto-merge after required checks pass.';
+              } else {
+                reason = 'Major update detected. Manual review is required before merge.';
+              }
+            }
+
+            core.setOutput('auto_merge', autoMerge ? 'true' : 'false');
+            core.setOutput('reason', reason);
+
+      - name: Enable auto merge
+        if: steps.classify.outputs.auto_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --auto --squash --repo ${{ github.repository }}
+
+      - name: Leave auto-merge note
+        if: steps.classify.outputs.auto_merge == 'true'
+        uses: actions/github-script@v7
+        env:
+          REASON: ${{ steps.classify.outputs.reason }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: [
+                'Dependabot auto-merge has been enabled for this PR.',
+                '',
+                `Reason: ${process.env.REASON}`,
+                '',
+                'Major updates are excluded from auto-merge and must be reviewed manually.'
+              ].join('\n')
+            });
+
+      - name: Leave manual review note
+        if: steps.classify.outputs.auto_merge != 'true'
+        uses: actions/github-script@v7
+        env:
+          REASON: ${{ steps.classify.outputs.reason }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: [
+                'Dependabot auto-merge was not enabled for this PR.',
+                '',
+                `Reason: ${process.env.REASON}`,
+                '',
+                'Please review this dependency update manually.'
+              ].join('\n')
+            });
