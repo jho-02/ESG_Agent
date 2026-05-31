@@ -11,6 +11,12 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "publish:github": "npm publish"
+    "publish:github": "npm publish",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.7",
+    "vitest": "^4.1.7"
   }
 }
